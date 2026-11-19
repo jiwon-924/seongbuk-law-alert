@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>성북 법령개정 알리미 시스템 설계도</title>
+  <!-- 스킬 규칙상 외부 글꼴은 Google Fonts 만 — KRDS 글꼴 순서의 Noto Sans KR 을 받고, Pretendard 가 설치돼 있으면 그것을 먼저 쓴다 -->
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    /* KRDS 토큰(docs/디자인시스템/krds.md) → diagram-design 역할 */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --paper: #FFFFFF;      /* 페이지 */
+      --paper-2: #FAFAFA;    /* 도식 바탕 (gray-5) */
+      --ink: #131416;        /* gray-100 */
+      --muted: #464C53;      /* gray-80 */
+      --soft: #6D7882;       /* gray-60 */
+      --rule: #CDD1D5;       /* gray-30 */
+      --accent: #256EF4;     /* primary-50 */
+      --font-sans: 'Pretendard GOV', 'Pretendard', 'Noto Sans KR', 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
+      --font-mono: 'Geist Mono', ui-monospace, monospace;
+    }
+    @page { size: A4 portrait; margin: 0; }
+    html, body { background: var(--paper); }
+    body {
+      width: 210mm; min-height: 297mm; margin: 0 auto;
+      padding: 12mm 12mm 10mm;
+      font-family: var(--font-sans); color: var(--ink);
+      -webkit-print-color-adjust: exact; print-color-adjust: exact;
+    }
+    .eyebrow { font-family: var(--font-mono); font-size: 10px; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase; color: var(--soft); margin-bottom: 6px; }
+    h1 { font-size: 28px; font-weight: 700; letter-spacing: -0.01em; line-height: 1.3; }
+    .lede { margin-top: 6px; font-size: 14px; line-height: 1.55; color: var(--muted); }
+    figure { margin-top: 16px; }
+    svg { width: 100%; height: auto; display: block; }
+    footer { margin-top: 12px; padding-top: 8px; border-top: 1px solid var(--rule); display: flex; justify-content: space-between; gap: 16px; font-size: 11px; color: var(--soft); }
+    footer .mono { font-family: var(--font-mono); letter-spacing: 0.04em; }
+  </style>
+</head>
+<body>
+  <p class="eyebrow">System design · Architecture</p>
+  <h1>성북 법령개정 알리미 시스템 설계도</h1>
+  <p class="lede">법령이 바뀌면 성북구 조례 중 검토할 조문과 개정 초안을 조례 담당자에게 알려 주는 서비스가 어떤 부분으로 이루어져 있는지 위에서 아래로 보여 줍니다.</p>
+
+  <figure>
+    <svg viewBox="0 0 720 768" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="system-design-title system-design-desc">
+      <title id="system-design-title">성북 법령개정 알리미 시스템 설계도</title>
+      <desc id="system-design-desc">조례 담당 공무원이 5단계 웹 화면을 쓰면, 서버가 법제처·국민참여입법센터·미리 받은 문서에서 자료를 가져오고 AI 3곳을 차례로 불러 조문 대조와 개정 초안을 만들며, 검토 상태는 브라우저에 저장되는 구성을 보여 준다.</desc>
+      <defs>
+        <marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#464C53"/></marker>
+        <marker id="arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#256EF4"/></marker>
+        <marker id="arrow-link" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#063A74"/></marker>
+        <marker id="arrow-soft" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#8A949E"/></marker>
+      </defs>
+
+      <rect width="100%" height="100%" fill="#FAFAFA"/>
+
+      <g font-family="'Pretendard GOV', 'Pretendard', 'Noto Sans KR', 'Malgun Gothic', sans-serif">
+
+        <!-- ── 구역(가장 먼저) ── -->
+        <rect x="24" y="304" width="672" height="144" rx="8" fill="rgba(19,20,22,0.02)" stroke="rgba(19,20,22,0.14)" stroke-width="0.8"/>
+        <rect x="36" y="308" width="80" height="16" rx="2" fill="#FAFAFA"/>
+        <text x="40" y="320" fill="#6D7882" font-size="12" font-weight="500">서버 · Vercel</text>
+
+        <!-- ── 화살표(상자보다 먼저) ── -->
+        <!-- 1 공무원 → 웹 화면 -->
+        <line x1="360" y1="80" x2="360" y2="148" stroke="#464C53" stroke-width="1.2" marker-end="url(#arrow)"/>
+        <rect x="368" y="104" width="32" height="16" rx="2" fill="#FAFAFA"/>
+        <text x="372" y="116" fill="#464C53" font-size="12" font-weight="500">사용</text>
+
+        <!-- 2 웹 화면 → 브라우저 저장 -->
+        <line x1="520" y1="212" x2="576" y2="212" stroke="#464C53" stroke-width="1.2" marker-end="url(#arrow)"/>
+        <rect x="532" y="188" width="32" height="16" rx="2" fill="#FAFAFA"/>
+        <text x="548" y="200" fill="#464C53" font-size="12" font-weight="500" text-anchor="middle">저장</text>
+
+        <!-- 3 웹 화면 → 자료 가져오기 (①②③⑤ 단계) -->
+        <line x1="190" y1="256" x2="190" y2="336" stroke="#464C53" stroke-width="1.2" marker-end="url(#arrow)"/>
+        <rect x="198" y="276" width="84" height="16" rx="2" fill="#FAFAFA"/>
+        <text x="202" y="288" fill="#464C53" font-size="12" font-weight="500">①②③⑤ 단계</text>
+
+        <!-- 4 웹 화면 → AI 검토 보조 (③④ 단계) — 강조 -->
+        <line x1="448" y1="256" x2="448" y2="336" stroke="#256EF4" stroke-width="1.2" marker-end="url(#arrow-accent)"/>
+        <rect x="456" y="276" width="60" height="16" rx="2" fill="#FAFAFA"/>
+        <text x="460" y="288" fill="#0B50D0" font-size="12" font-weight="500">③④ 단계</text>
+
+        <!-- 5 자료 → 법제처 (실시간 조회) -->
+        <line x1="108" y1="432" x2="108" y2="520" stroke="#063A74" stroke-width="1.2" marker-end="url(#arrow-link)"/>
+        <rect x="116" y="460" width="72" height="16" rx="2" fill="#FAFAFA"/>
+        <text x="120" y="472" fill="#063A74" font-size="12" font-weight="500">실시간 조회</text>
+
+        <!-- 6 자료 → 국민참여입법센터 (승인 대기, 점선) -->
+        <line x1="276" y1="432" x2="276" y2="520" stroke="#8A949E" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arrow-soft)"/>
+
+        <!-- 7 자료 → 미리 받은 문서 (시연 값) -->
+        <path d="M 320,432 V 468 Q 320,476 328,476 H 412 Q 420,476 420,484 V 520" fill="none" stroke="#464C53" stroke-width="1.2" marker-end="url(#arrow)"/>
+        <rect x="348" y="452" width="48" height="16" rx="2" fill="#FAFAFA"/>
+        <text x="372" y="464" fill="#464C53" font-size="12" font-weight="500" text-anchor="middle">시연 값</text>
+
+        <!-- 8 AI 검토 보조 → 미리 받은 문서 (근거 조각) -->
+        <line x1="468" y1="432" x2="468" y2="520" stroke="#464C53" stroke-width="1.2" marker-end="url(#arrow)"/>
+        <rect x="476" y="476" width="60" height="16" rx="2" fill="#FAFAFA"/>
+        <text x="480" y="488" fill="#464C53" font-size="12" font-weight="500">근거 조각</text>
+
+        <!-- 9 AI 검토 보조 → AI 3곳 (차례로 호출) -->
+        <line x1="612" y1="432" x2="612" y2="520" stroke="#063A74" stroke-width="1.2" marker-end="url(#arrow-link)"/>
+        <rect x="620" y="476" width="72" height="16" rx="2" fill="#FAFAFA"/>
+        <text x="624" y="488" fill="#063A74" font-size="12" font-weight="500">차례로 호출</text>
+
+        <!-- ── 1층: 사용자 ── -->
+        <rect x="260" y="24" width="200" height="56" rx="6" fill="#FAFAFA"/>
+        <rect x="260" y="24" width="200" height="56" rx="6" fill="rgba(70,76,83,0.08)" stroke="#6D7882" stroke-width="1"/>
+        <text x="360" y="48" fill="#131416" font-size="12" font-weight="600" text-anchor="middle">조례 담당 공무원</text>
+        <text x="360" y="68" fill="#6D7882" font-size="12" text-anchor="middle">성북구청 · 브라우저로 접속</text>
+
+        <!-- ── 2층: 웹 화면 ── -->
+        <rect x="40" y="148" width="480" height="108" rx="6" fill="#FAFAFA"/>
+        <rect x="40" y="148" width="480" height="108" rx="6" fill="#FFFFFF" stroke="#131416" stroke-width="1"/>
+        <text x="280" y="172" fill="#131416" font-size="12" font-weight="600" text-anchor="middle">웹 화면 — 5단계로 검토</text>
+        <!-- 단계 칩: 순서가 실제 사용 흐름이라 번호를 붙인다 -->
+        <g font-size="12" font-weight="500" fill="#131416" text-anchor="middle">
+          <rect x="56" y="188" width="64" height="28" rx="4" fill="#F4F5F6" stroke="#CDD1D5" stroke-width="0.8"/>
+          <text x="88" y="206">① 현황판</text>
+          <rect x="132" y="188" width="96" height="28" rx="4" fill="#F4F5F6" stroke="#CDD1D5" stroke-width="0.8"/>
+          <text x="180" y="206">② 신구법 비교</text>
+          <rect x="240" y="188" width="84" height="28" rx="4" fill="#F4F5F6" stroke="#CDD1D5" stroke-width="0.8"/>
+          <text x="282" y="206">③ 조문 대조</text>
+          <rect x="336" y="188" width="80" height="28" rx="4" fill="#F4F5F6" stroke="#CDD1D5" stroke-width="0.8"/>
+          <text x="376" y="206">④ 초안 3안</text>
+          <rect x="428" y="188" width="76" height="28" rx="4" fill="#F4F5F6" stroke="#CDD1D5" stroke-width="0.8"/>
+          <text x="466" y="206">⑤ 입법예고</text>
+        </g>
+        <text x="280" y="240" fill="#6D7882" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">public/ · index.html · styles.css · app.js</text>
+
+        <!-- 브라우저 저장 -->
+        <rect x="576" y="148" width="112" height="108" rx="6" fill="#FAFAFA"/>
+        <rect x="576" y="148" width="112" height="108" rx="6" fill="rgba(19,20,22,0.05)" stroke="#464C53" stroke-width="1"/>
+        <text x="632" y="180" fill="#131416" font-size="12" font-weight="600" text-anchor="middle">브라우저 저장</text>
+        <text x="632" y="204" fill="#464C53" font-size="12" text-anchor="middle">검토 상태</text>
+        <text x="632" y="220" fill="#464C53" font-size="12" text-anchor="middle">고른 초안</text>
+        <text x="632" y="240" fill="#6D7882" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">localStorage</text>
+
+        <!-- ── 3층: 서버 ── -->
+        <rect x="40" y="336" width="300" height="96" rx="6" fill="#FAFAFA"/>
+        <rect x="40" y="336" width="300" height="96" rx="6" fill="#FFFFFF" stroke="#131416" stroke-width="1"/>
+        <text x="190" y="360" fill="#131416" font-size="12" font-weight="600" text-anchor="middle">자료 가져오기</text>
+        <text x="190" y="382" fill="#464C53" font-size="12" text-anchor="middle">법령 변경 · 비교 · 조례 · 입법예고</text>
+        <text x="190" y="402" fill="#6D7882" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">/api/changes · compare · ordinance · notices</text>
+        <text x="190" y="420" fill="#6D7882" font-size="12" text-anchor="middle">키는 서버에만 보관</text>
+
+        <!-- AI 검토 보조 (강조) -->
+        <rect x="380" y="336" width="300" height="96" rx="6" fill="#FAFAFA"/>
+        <rect x="380" y="336" width="300" height="96" rx="6" fill="#ECF2FE" stroke="#256EF4" stroke-width="1.2"/>
+        <text x="530" y="360" fill="#0B50D0" font-size="12" font-weight="700" text-anchor="middle">AI 검토 보조</text>
+        <text x="530" y="382" fill="#131416" font-size="12" text-anchor="middle">조문 대조와 사유 · 개정 초안 3안</text>
+        <text x="530" y="402" fill="#6D7882" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">/api/analyze · /api/drafts</text>
+        <text x="530" y="420" fill="#6D7882" font-size="12" text-anchor="middle">결과 10분 저장 · 15초 안 재호출 막음</text>
+
+        <!-- ── 4층: 자료 · 외부 ── -->
+        <!-- 법제처 (외부) -->
+        <rect x="36" y="520" width="144" height="84" rx="6" fill="#FAFAFA"/>
+        <rect x="36" y="520" width="144" height="84" rx="6" fill="rgba(19,20,22,0.03)" stroke="rgba(19,20,22,0.30)" stroke-width="1"/>
+        <text x="108" y="548" fill="#131416" font-size="12" font-weight="600" text-anchor="middle">법제처 국가법령정보</text>
+        <text x="108" y="568" fill="#464C53" font-size="12" text-anchor="middle">법령 · 조례 원문</text>
+        <text x="108" y="588" fill="#6D7882" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">LAW_OC</text>
+
+        <!-- 국민참여입법센터 (승인 대기, 점선) -->
+        <rect x="204" y="520" width="144" height="84" rx="6" fill="#FAFAFA"/>
+        <rect x="204" y="520" width="144" height="84" rx="6" fill="rgba(19,20,22,0.02)" stroke="rgba(19,20,22,0.36)" stroke-width="1" stroke-dasharray="4,3"/>
+        <text x="276" y="548" fill="#131416" font-size="12" font-weight="600" text-anchor="middle">국민참여입법센터</text>
+        <text x="276" y="568" fill="#8F4D00" font-size="12" font-weight="500" text-anchor="middle">승인 대기 · 시연 값</text>
+        <text x="276" y="588" fill="#6D7882" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">LAWMAKING_OC</text>
+
+        <!-- 미리 받은 문서 (저장) -->
+        <rect x="372" y="520" width="144" height="84" rx="6" fill="#FAFAFA"/>
+        <rect x="372" y="520" width="144" height="84" rx="6" fill="rgba(19,20,22,0.05)" stroke="#464C53" stroke-width="1"/>
+        <text x="444" y="548" fill="#131416" font-size="12" font-weight="600" text-anchor="middle">미리 받은 문서</text>
+        <text x="444" y="568" fill="#464C53" font-size="12" text-anchor="middle">근거 조각 561개</text>
+        <text x="444" y="588" fill="#6D7882" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">api/data/*.json</text>
+
+        <!-- AI 3곳 (외부) -->
+        <rect x="540" y="520" width="144" height="84" rx="6" fill="#FAFAFA"/>
+        <rect x="540" y="520" width="144" height="84" rx="6" fill="rgba(19,20,22,0.03)" stroke="rgba(19,20,22,0.30)" stroke-width="1"/>
+        <text x="612" y="548" fill="#131416" font-size="12" font-weight="600" text-anchor="middle">AI 3곳</text>
+        <text x="612" y="568" fill="#6D7882" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">Claude → Groq → Gemini</text>
+        <text x="612" y="588" fill="#464C53" font-size="12" text-anchor="middle">앞이 막히면 다음 AI</text>
+
+        <!-- ── 한마디 설명 2개 (점선 지시선) ── -->
+        <path d="M 108,636 V 608" fill="none" stroke="rgba(19,20,22,0.40)" stroke-width="1" stroke-dasharray="4,3"/>
+        <circle cx="108" cy="606" r="2" fill="#131416"/>
+        <text x="36" y="656" fill="#131416" font-size="13" font-style="italic">외부 연결이 막히면 이유와 「시연 값」을 함께 보여 줍니다.</text>
+
+        <path d="M 460,668 Q 452,640 444,608" fill="none" stroke="rgba(37,110,244,0.55)" stroke-width="1" stroke-dasharray="4,3"/>
+        <circle cx="444" cy="606" r="2" fill="#256EF4"/>
+        <text x="684" y="684" fill="#0B50D0" font-size="13" font-style="italic" text-anchor="end">AI는 미리 받은 문서로만 답하고 근거를 붙입니다.</text>
+        <text x="684" y="704" fill="#0B50D0" font-size="13" font-style="italic" text-anchor="end">최종 판단은 담당자가 합니다.</text>
+
+        <!-- ── 범례 (아래 가로 띠) ── -->
+        <line x1="24" y1="724" x2="696" y2="724" stroke="rgba(19,20,22,0.12)" stroke-width="0.8"/>
+        <g font-size="12" fill="#464C53">
+          <text x="24" y="752" font-weight="700" fill="#6D7882">범례</text>
+          <rect x="72" y="740" width="20" height="14" rx="3" fill="rgba(70,76,83,0.08)" stroke="#6D7882" stroke-width="1"/>
+          <text x="98" y="752">사용자</text>
+          <rect x="160" y="740" width="20" height="14" rx="3" fill="#FFFFFF" stroke="#131416" stroke-width="1"/>
+          <text x="186" y="752">우리 시스템</text>
+          <rect x="268" y="740" width="20" height="14" rx="3" fill="#ECF2FE" stroke="#256EF4" stroke-width="1.2"/>
+          <text x="294" y="752">핵심 (AI)</text>
+          <rect x="364" y="740" width="20" height="14" rx="3" fill="rgba(19,20,22,0.05)" stroke="#464C53" stroke-width="1"/>
+          <text x="390" y="752">저장</text>
+          <rect x="432" y="740" width="20" height="14" rx="3" fill="rgba(19,20,22,0.03)" stroke="rgba(19,20,22,0.30)" stroke-width="1"/>
+          <text x="458" y="752">외부 기관</text>
+          <line x1="528" y1="748" x2="556" y2="748" stroke="#063A74" stroke-width="1.2" marker-end="url(#arrow-link)"/>
+          <text x="562" y="752">외부 호출</text>
+          <line x1="624" y1="748" x2="648" y2="748" stroke="#8A949E" stroke-width="1" stroke-dasharray="4,3"/>
+          <text x="652" y="752">승인 대기</text>
+        </g>
+      </g>
+    </svg>
+  </figure>
+
+  <footer>
+    <span>2026-11-19 기준 · 한성대학교 캡스톤 5조 · 성북 법령개정 알리미 1차 완성본</span>
+    <span>원본: docs/시스템설계도.html</span>
+  </footer>
+</body>
+</html>

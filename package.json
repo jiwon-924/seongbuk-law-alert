@@ -1,0 +1,12 @@
+{
+  "name": "seongbuk-law-alert",
+  "private": true,
+  "type": "module",
+  "description": "성북 법령개정 알리미 — 한성대학교 5조 시연",
+  "scripts": {
+    "dev": "node --env-file=.env server.js"
+  },
+  "engines": {
+    "node": ">=20.6"
+  }
+}
