@@ -14,11 +14,12 @@
   --shadow-3: 0 6px 16px rgb(19 20 22 / .10), 0 2px 4px rgb(19 20 22 / .05);
   --font: "Pretendard GOV", "Pretendard", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif;
   --ease: 180ms ease-out;
+  --page-bg: #0B1F4D; /* 전체 배경: 남색 */
 }
 
 *, *::before, *::after { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }
-body { margin: 0; background: var(--bg); color: var(--fg-1); font-family: var(--font); font-size: 17px; line-height: 1.55; }
+body { margin: 0; background: var(--page-bg); color: var(--fg-1); font-family: var(--font); font-size: 17px; line-height: 1.55; }
 h1, h2, h3, h4, p { margin: 0; }
 button, input, select { font: inherit; }
 a { color: var(--primary-60); }
@@ -244,8 +245,19 @@ details.status .status__body { padding: 0 20px 16px; display: grid; gap: 4px; fo
 .toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); max-width: calc(100% - 32px); padding: 12px 20px; background: var(--gray-100); color: #fff; border-radius: var(--r-m); box-shadow: var(--shadow-3); font-size: 15px; animation: up 200ms ease-out; }
 @keyframes up { from { transform: translate(-50%, 12px); opacity: 0; } to { transform: translate(-50%, 0); opacity: 1; } }
 
+/* 남색 배경 위에 바로 놓이는 글자는 밝게, 흰 면(카드·표·패널) 안은 어둡게 */
+main.container { color: #fff; }
+.panel, .infobox, .table-wrap, .chip, .draft, details.status, .link, .chain, .alert, .decision, .cmp, .seg__item span { color: var(--fg-1); }
+.page-head .eyebrow, .breadcrumb [aria-current], .steps li.is-current a { color: #9DC0FF; }
+.page-head .lede, .page-head .meta, .breadcrumb, .breadcrumb a, .breadcrumb .sep, .seg__legend, .steps a, .steps span.step, .steps li.is-done a { color: #D4DCEE; }
+.breadcrumb a:hover { color: #fff; }
+.steps .dot { color: var(--fg-1); }
+.steps li:not(.is-done):not(.is-current)::before { background: #3A4E80; }
+#view > .wait-note, #view > .note { color: #D4DCEE; }
+:focus-visible { outline-color: #9DC0FF; }
+
 /* 푸터 */
-.footer { background: var(--gray-100); color: #B1B8BE; font-size: 13px; padding: 40px 0; }
+.footer { background: #06122E; color: #B1B8BE; font-size: 13px; padding: 40px 0; }
 .footer__grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
 .footer p + p { margin-top: 6px; }
 .footer__name { color: #fff; font-size: 15px; font-weight: 700; }
