@@ -1,0 +1,4 @@
+# Vercel 배포에서 뺄 파일 (깃허브에는 그대로 남는다)
+# server.js 는 로컬 실행용(node --env-file=.env server.js)이다.
+# 맨 위에 server.js 가 있으면 Vercel 이 모든 주소를 받는 서버 함수로 잡아 / 와 /api/* 가 500(FUNCTION_INVOCATION_FAILED)이 된다.
+server.js
